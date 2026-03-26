@@ -1,98 +1,73 @@
-# Noor Al Huda
+# Noor Al Huda | نور الهدى
 
-Arabic-first Islamic companion app built with Expo on the frontend, Firebase for user data, and Cloudflare Workers for cached public content.
+English and Arabic documentation for the `Noor Al Huda` mobile app and Cloudflare backend.
 
-## Workspace
+---
 
-- `apps/mobile` — Expo Router mobile app with Quran, prayer times, azkar, radio, and Firebase sync scaffolding.
-- `workers` — Cloudflare Worker API gateway and cache layer.
-- `firestore.rules` / `firestore.indexes.json` — deployed Firestore security rules and indexes.
+## English
 
-## Firebase
+### Overview
 
-- Project ID: `noor-al-huda-260326`
-- Firestore database: `(default)` in `me-central2`
-- Web app ID: `1:1024474386791:web:afa7b5df1cde4bfd2adfc2`
-- Android package: `com.nooralhuda.app`
-- iOS bundle ID: `com.nooralhuda.app`
-- Enabled providers: `email/password`, `google.com`, `anonymous`
-- Android debug SHA-1: `8F:01:71:4D:D6:9E:90:A0:79:07:90:A0:CF:19:18:A1:DE:E9:73:FE`
-- Android debug SHA-256: `EE:DB:B4:7F:D2:F2:C6:25:D0:78:85:F8:F9:B8:83:F7:EB:22:A5:4F:1C:57:86:7E:E5:27:9E:33:61:86:17:E2`
-- Android release SHA-1: `A7:5B:D7:98:F9:05:DB:DE:4E:8E:E0:40:46:4F:44:EA:B2:2C:E2:93`
-- Android release SHA-256: `03:4E:8C:9E:56:9F:F3:93:26:C6:28:3B:FF:D3:3B:BA:7D:A8:E7:C1:1F:4A:ED:BB:41:A7:62:82:60:06:6B:49`
+`Noor Al Huda` is an Arabic-first Islamic mobile app built with Expo / React Native and a Cloudflare Worker backend.
 
-Note: Firestore is fully provisioned and deployed, and the app is wired for email, Google, and guest login. The current `google-services.json` already includes both debug and release Android OAuth clients.
+- Mobile app: `apps/mobile`
+- Worker API: `workers`
+- Firestore config: `firebase.json`, `firestore.rules`, `firestore.indexes.json`
 
-Local signing material prepared for Android release builds:
+### Current stack
 
-- Keystore: `apps/mobile/.credentials/noor-al-huda-upload.jks`
-- Local secrets file: `apps/mobile/.credentials/release-keystore.env`
-- Local EAS credentials file: `apps/mobile/credentials.json`
+- Expo SDK 55 + React Native 0.83
+- Expo Router
+- Zustand + TanStack Query
+- SQLite + MMKV
+- Firebase Auth / Firestore / notifications wiring
+- Cloudflare Worker + KV + Vectorize
+- Track Player for native audio playback
 
-## Cloudflare
+### Live services
 
-- Worker name: `noor-al-huda-api`
 - Worker URL: `https://noor-al-huda-api.shinzero.workers.dev`
-- Vectorize index: `quran-semantic-index` (`768` dims, `cosine`)
-- KV namespaces:
-  - `PRAYER_CACHE`
-  - `QURAN_CACHE`
-  - `HADITH_CACHE`
-  - `RADIO_LIST`
-  - `AZKAR_CACHE`
+- Vector index: `quran-semantic-index`
+- Firebase project: `noor-al-huda-260326`
 
-## Local commands
+### Features already implemented
 
-Mobile app:
+- Email/password, Google, guest, and passwordless email-link auth flows
+- Real-time settings and bookmark sync through Firestore
+- Quran reading, prayer times, azkar, radio, and settings screens
+- Tajweed coach, semantic Quran search, dua generator, AR qibla, halal scanner
+- Worship tracker, ruya journal, kids mode, group khatm, privacy manager
+- Share cards, content flagging, achievements toast, seasonal theme hook
+- Android widget bridge + iOS widget/live-activity bridge scaffolding
+
+### Local commands
+
+Mobile:
 
 ```bash
 cd apps/mobile
+npm test
+npm run test:firebase
+npm run doctor
 node node_modules/typescript/bin/tsc --noEmit
-node node_modules/expo/bin/cli start
-```
-
-Mobile automated tests:
-
-```bash
-cd apps/mobile
-node /data/data/com.termux/files/usr/bin/npm test
-node /data/data/com.termux/files/usr/bin/npm run test:firebase
-```
-
-Brand assets regeneration:
-
-```bash
-cd apps/mobile
-python ./scripts/generate_brand_assets.py
-```
-
-Production readiness checks:
-
-```bash
-cd apps/mobile
-PATH="/data/data/com.termux/files/home/Noor-Al-Huda/bin:$PATH" node node_modules/expo-doctor/build/index.js
-CI=1 PATH="/data/data/com.termux/files/home/Noor-Al-Huda/bin:$PATH" node node_modules/expo/bin/cli prebuild --platform android --no-install
-CI=1 PATH="/data/data/com.termux/files/home/Noor-Al-Huda/bin:$PATH" node node_modules/expo/bin/cli prebuild --platform ios --no-install
-```
-
-EAS build command after logging in to Expo:
-
-```bash
-cd apps/mobile
-PATH="/data/data/com.termux/files/home/Noor-Al-Huda/bin:$PATH" eas login
-PATH="/data/data/com.termux/files/home/Noor-Al-Huda/bin:$PATH" eas build --platform android --profile production
 ```
 
 Worker:
 
 ```bash
 cd workers
+npm test
 node node_modules/typescript/bin/tsc --noEmit
-node node_modules/esbuild/bin/esbuild src/index.ts --bundle --format=esm --platform=browser --target=es2022 --outfile=dist/worker.mjs
-node /data/data/com.termux/files/usr/bin/npm test
 ```
 
-Vectorize seeding and worker deploy:
+Brand assets:
+
+```bash
+cd apps/mobile
+python ./scripts/generate_brand_assets.py
+```
+
+Vector seeding / deploy:
 
 ```bash
 cd workers
@@ -100,48 +75,129 @@ CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... python ./scripts/seed_quran_v
 CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... python ./scripts/deploy_worker.py
 ```
 
-Firestore deploy:
+### GitHub Actions
+
+This repository includes two workflows:
+
+- `ci.yml`: installs dependencies, runs tests, type checks, and Expo Doctor
+- `eas-build.yml`: manually triggers an EAS cloud build
+
+Required GitHub secrets for build workflow:
+
+- `EXPO_TOKEN` — Expo/EAS access token
+
+Optional GitHub secrets if you later automate worker deployment:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+### Current build state
+
+- New EAS builds have been started from the latest fixes.
+- Android preview build ID: `27ba7766-8b32-4009-95fe-76b4690d8e0c`
+- iOS simulator build ID: `f00bce55-ca1f-47ba-96c5-c23e0cd7fdb3`
+
+### Known caveats
+
+- iOS WidgetKit / Live Activity files are present, but production widget target validation still depends on full Xcode/cloud build success.
+- Android native builds previously failed with a Gradle error; a fresh preview build is now queued/rerun after native hardening changes.
+
+---
+
+## العربية
+
+### نظرة عامة
+
+`نور الهدى` تطبيق إسلامي عربي أولاً، مبني على Expo / React Native مع خلفية Cloudflare Worker.
+
+- تطبيق الجوال: `apps/mobile`
+- واجهات الخلفية: `workers`
+- إعدادات Firestore: `firebase.json` و `firestore.rules` و `firestore.indexes.json`
+
+### التقنيات الحالية
+
+- Expo SDK 55 و React Native 0.83
+- Expo Router
+- Zustand و TanStack Query
+- SQLite و MMKV
+- ربط Firebase للمصادقة و Firestore والإشعارات
+- Cloudflare Worker مع KV و Vectorize
+- `react-native-track-player` للصوت في المنصات الأصلية
+
+### الخدمات الحية
+
+- رابط العامل: `https://noor-al-huda-api.shinzero.workers.dev`
+- فهرس المتجهات: `quran-semantic-index`
+- مشروع Firebase: `noor-al-huda-260326`
+
+### الميزات المنجزة
+
+- تسجيل الدخول بالبريد وكلمة المرور وGoogle والضيف والرابط البريدي بدون كلمة مرور
+- مزامنة آنية للإعدادات والعلامات المرجعية عبر Firestore
+- شاشات القرآن والصلاة والأذكار والإذاعة والإعدادات
+- مدرب التجويد والبحث الدلالي ومولد الدعاء وبوصلة القبلة والماسح الحلال
+- متابع العبادة ويومية الرؤى ووضع الأطفال والختمة الجماعية ووضع الخصوصية
+- بطاقات مشاركة، نظام بلاغات للمحتوى، تنبيه الإنجاز، وثيمات موسمية
+- طبقات ربط لويدجت Android وجسر iOS للويدجت والأنشطة الحية
+
+### أوامر التشغيل المحلي
+
+تطبيق الجوال:
 
 ```bash
-node /data/data/com.termux/files/usr/bin/firebase deploy --only firestore --project noor-al-huda-260326
+cd apps/mobile
+npm test
+npm run test:firebase
+npm run doctor
+node node_modules/typescript/bin/tsc --noEmit
 ```
 
-## Current app enhancements
+الخلفية:
 
-- Google sign-in now has staged UX and localized error handling.
-- Guest login is restored and works against live Firebase Auth.
-- Passwordless email-link auth is added, with deep-link completion support through the Firebase hosted auth domain.
-- Password reset and email verification flows are wired into the auth UI.
-- Settings and bookmarks now sync through Firestore in real time via `users/{uid}` and `users/{uid}/bookmarks/{bookmarkId}`.
-- Quran semantic search is now backed by a seeded Cloudflare Vectorize index.
-- Prayer reminders can be scheduled locally for the next prayer.
-- A new settings tab shows backend health, build metadata, and account status.
-- A feature hub exposes Tajweed Coach, semantic search, dua generation, AR qibla, halal scanning, tracker, ruya journal, group khatm, kids mode, privacy controls, voice commands, and share cards.
-- Radio/native audio playback has been migrated to `react-native-track-player` on native platforms.
-- Android widget bridge/provider and iOS Widget/Live Activity bridge layers have been added to the native projects.
-- Android and iOS native projects were generated with `prebuild` for build readiness checks.
-- Custom brand artwork replaced the default Expo visuals in `apps/mobile/assets/` and `apps/mobile/assets/branding/`.
+```bash
+cd workers
+npm test
+node node_modules/typescript/bin/tsc --noEmit
+```
 
-## Verification completed
+إعادة توليد الهوية البصرية:
 
-- Mobile TypeScript passes.
-- Mobile Jest suite passes.
-- Mobile Firebase integration script passes.
-- Worker TypeScript passes.
-- Worker automated tests pass.
-- Expo Doctor passes `17/17`.
-- Web export succeeds.
-- Firestore rules were deployed successfully.
-- Live Cloudflare worker health endpoint returns `ok: true`.
-- Live semantic Quran search endpoint responds from the seeded Vectorize index.
-- A live Firebase integration check succeeded for:
-  - email/password account creation,
-  - email verification request,
-  - password reset request,
-  - Firestore settings write,
-  - Firestore bookmark write.
+```bash
+cd apps/mobile
+python ./scripts/generate_brand_assets.py
+```
 
-## Remaining manual step
+زرع متجهات القرآن ونشر العامل:
 
-- Expo/EAS cloud builds still require an Expo account login. `eas build:configure` could not complete in this environment until `eas login` is run.
-- The iOS widget files and Live Activity bridge are present, but a dedicated WidgetKit extension target still needs to be fully wired in Xcode for production iOS widget rendering.
+```bash
+cd workers
+CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... python ./scripts/seed_quran_vectors.py --batch-size 128
+CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... python ./scripts/deploy_worker.py
+```
+
+### GitHub Actions
+
+يوجد مساران في GitHub Actions:
+
+- `ci.yml` للتثبيت والاختبارات وفحوص TypeScript و Expo Doctor
+- `eas-build.yml` لتشغيل بناء EAS يدوياً
+
+المتغير السري المطلوب للبناء:
+
+- `EXPO_TOKEN`
+
+ومتغيرات اختيارية إذا أردت لاحقاً نشر Cloudflare من GitHub:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+### حالة البناء الحالية
+
+- تم إطلاق بنائين جديدين بعد آخر إصلاحات.
+- رقم بناء Android preview: `27ba7766-8b32-4009-95fe-76b4690d8e0c`
+- رقم بناء iOS simulator: `f00bce55-ca1f-47ba-96c5-c23e0cd7fdb3`
+
+### ملاحظات مهمة
+
+- ملفات WidgetKit و Live Activity على iOS موجودة، لكن اعتمادها النهائي ما زال مرتبطاً بنجاح بناء Xcode / EAS.
+- كانت هناك أخطاء Gradle في Android سابقاً، وتم تشغيل بناء جديد بعد تقوية الإعدادات الأصلية.
