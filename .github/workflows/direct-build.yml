@@ -1,6 +1,8 @@
 name: Direct Build
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       target:
@@ -15,7 +17,7 @@ on:
 
 jobs:
   android:
-    if: ${{ inputs.target == 'android' || inputs.target == 'both' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'android' || inputs.target == 'both' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,7 +58,7 @@ jobs:
           if-no-files-found: error
 
   ios:
-    if: ${{ inputs.target == 'ios' || inputs.target == 'both' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'ios' || inputs.target == 'both' }}
     runs-on: macos-15
     defaults:
       run:
