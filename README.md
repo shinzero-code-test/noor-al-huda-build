@@ -1,6 +1,6 @@
 # Noor Al Huda | نور الهدى
 
-English and Arabic documentation for the `Noor Al Huda` mobile app and Cloudflare backend.
+English and Arabic documentation for the `Noor Al Huda` platform: mobile app, new Next.js web app, and Cloudflare backend.
 
 ---
 
@@ -8,15 +8,17 @@ English and Arabic documentation for the `Noor Al Huda` mobile app and Cloudflar
 
 ### Overview
 
-`Noor Al Huda` is an Arabic-first Islamic mobile app built with Expo / React Native and a Cloudflare Worker backend.
+`Noor Al Huda` is an Arabic-first Islamic platform built with Expo / React Native for mobile, Next.js for web, and a Cloudflare Worker backend.
 
 - Mobile app: `apps/mobile`
+- Web app: `apps/web`
 - Worker API: `workers`
 - Firestore config: `firebase.json`, `firestore.rules`, `firestore.indexes.json`
 
 ### Current stack
 
 - Expo SDK 55 + React Native 0.83
+- Next.js 14 + React 18 web app
 - Expo Router
 - Zustand + TanStack Query
 - SQLite + MMKV
@@ -29,9 +31,11 @@ English and Arabic documentation for the `Noor Al Huda` mobile app and Cloudflar
 - Worker URL: `https://noor-al-huda-api.shinzero.workers.dev`
 - Vector index: `quran-semantic-index`
 - Firebase project: `noor-al-huda-260326`
+- Chosen web deployment target: `Vercel`
 
 ### Features already implemented
 
+- Arabic-first web experience with semantic Quran search, dua generation, prayer times, and halal scanning
 - Email/password, Google, guest, and passwordless email-link auth flows
 - Real-time settings and bookmark sync through Firestore
 - Quran reading, prayer times, azkar, radio, and settings screens
@@ -60,6 +64,14 @@ npm test
 node node_modules/typescript/bin/tsc --noEmit
 ```
 
+Web app:
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+```
+
 Brand assets:
 
 ```bash
@@ -81,6 +93,8 @@ This repository includes two workflows:
 
 - `ci.yml`: installs dependencies, runs tests, type checks, and Expo Doctor
 - `direct-build.yml`: builds the app directly in GitHub Actions without EAS
+
+`ci.yml` also validates the Next.js web app on GitHub Actions.
 
 `direct-build.yml` does the following:
 
@@ -111,15 +125,17 @@ Optional GitHub secrets if you later automate worker deployment:
 
 ### نظرة عامة
 
-`نور الهدى` تطبيق إسلامي عربي أولاً، مبني على Expo / React Native مع خلفية Cloudflare Worker.
+`نور الهدى` منصة إسلامية عربية أولاً، تضم تطبيق جوال ونسخة ويب حديثة مع خلفية Cloudflare Worker.
 
 - تطبيق الجوال: `apps/mobile`
+- تطبيق الويب: `apps/web`
 - واجهات الخلفية: `workers`
 - إعدادات Firestore: `firebase.json` و `firestore.rules` و `firestore.indexes.json`
 
 ### التقنيات الحالية
 
 - Expo SDK 55 و React Native 0.83
+- Next.js 14 و React 18 للويب
 - Expo Router
 - Zustand و TanStack Query
 - SQLite و MMKV
@@ -132,9 +148,11 @@ Optional GitHub secrets if you later automate worker deployment:
 - رابط العامل: `https://noor-al-huda-api.shinzero.workers.dev`
 - فهرس المتجهات: `quran-semantic-index`
 - مشروع Firebase: `noor-al-huda-260326`
+- منصة نشر الويب المختارة: `Vercel`
 
 ### الميزات المنجزة
 
+- تجربة ويب عربية أولاً تشمل البحث الدلالي في القرآن، ومولد الدعاء، ومواقيت الصلاة، وفحص المنتجات الحلال
 - تسجيل الدخول بالبريد وكلمة المرور وGoogle والضيف والرابط البريدي بدون كلمة مرور
 - مزامنة آنية للإعدادات والعلامات المرجعية عبر Firestore
 - شاشات القرآن والصلاة والأذكار والإذاعة والإعدادات
@@ -163,6 +181,14 @@ npm test
 node node_modules/typescript/bin/tsc --noEmit
 ```
 
+تطبيق الويب:
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+```
+
 إعادة توليد الهوية البصرية:
 
 ```bash
@@ -184,6 +210,8 @@ CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... python ./scripts/deploy_worke
 
 - `ci.yml` للتثبيت والاختبارات وفحوص TypeScript و Expo Doctor
 - `direct-build.yml` لبناء التطبيق مباشرة داخل GitHub Actions بدون EAS
+
+ويقوم `ci.yml` أيضاً بفحص نسخة الويب المبنية بـ Next.js على GitHub Actions.
 
 مسار `direct-build.yml` يقوم بالتالي:
 

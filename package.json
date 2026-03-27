@@ -1,0 +1,10 @@
+{
+  "name": "noor-al-huda-monorepo",
+  "private": true,
+  "scripts": {
+    "web:install": "npm --prefix apps/web install --ignore-scripts",
+    "web:build": "npm --prefix apps/web run build",
+    "web:lint": "npm --prefix apps/web run lint",
+    "web:typecheck": "npm --prefix apps/web run typecheck"
+  }
+}
