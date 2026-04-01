@@ -17,6 +17,7 @@ import {
   syncUserSettings,
   pushBookmarksSnapshot,
 } from '../lib/firebase';
+import { initStorageAsync } from '../lib/mmkv';
 import { initDatabaseAsync } from '../lib/sqlite';
 import { theme } from '../lib/theme';
 import { serializeBookmarks, useAppStore } from '../store/app-store';
@@ -41,6 +42,7 @@ export function AppProviders({ children }: PropsWithChildren) {
     void (async () => {
       try {
         await SystemUI.setBackgroundColorAsync(theme.colors.background);
+        await initStorageAsync();
         await initDatabaseAsync();
       } catch {
         useAppStore.getState().setSyncState('error', 'تعذر تهيئة التخزين المحلي بشكل كامل.');
