@@ -309,7 +309,7 @@ export default function HomeScreen() {
             />
             {!googleSignIn.enabled ? (
               <Text style={styles.helperText}>
-                Google Sign-In يحتاج إعادة تحميل التطبيق بعد تحديث ملفات Firebase، كما يلزم إضافة SHA الإصدار النهائي قبل نشر Android.
+                {googleSignIn.info ?? 'Google Sign-In غير متاح حالياً على هذا الإصدار.'}
               </Text>
             ) : null}
             <Text style={styles.helperText}>

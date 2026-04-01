@@ -1,6 +1,8 @@
+import { makeRedirectUri } from 'expo-auth-session';
 import { useEffect, useMemo, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { Platform } from 'react-native';
 import { type User } from 'firebase/auth';
 
 import { mapFirebaseAuthError, mapGoogleAuthError } from './error-messages';
@@ -56,7 +58,8 @@ export function useGoogleSignIn() {
   const [info, setInfo] = useState<string | null>(null);
   const [stage, setStage] = useState<'idle' | 'opening' | 'verifying' | 'done'>('idle');
 
-  const enabled = hasGoogleAuthConfig;
+  const androidUnsupported = Platform.OS === 'android';
+  const enabled = hasGoogleAuthConfig && !androidUnsupported;
   const googleConfig = useMemo(
     () => ({
       webClientId: googleAuthConfig.webClientId,
@@ -69,7 +72,7 @@ export function useGoogleSignIn() {
   );
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest(googleConfig, {
-    native: 'nooralhuda://redirect',
+    native: makeRedirectUri({ native: 'nooralhuda:/oauthredirect' }),
   });
 
   useEffect(() => {
@@ -79,6 +82,12 @@ export function useGoogleSignIn() {
       void WebBrowser.coolDownAsync();
     };
   }, []);
+
+  useEffect(() => {
+    if (androidUnsupported) {
+      setInfo('تسجيل الدخول عبر Google معطّل مؤقتاً على Android في إصدار الإنتاج الحالي حتى ننتقل إلى تكامل Google Sign-In الأصلي الآمن.');
+    }
+  }, [androidUnsupported]);
 
   useEffect(() => {
     let cancelled = false;
