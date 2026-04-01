@@ -2,33 +2,22 @@
 
 import { useEffect, useState } from 'react';
 
+import { useAuth } from '@/components/auth-provider';
 import { apiBaseUrl } from '@/lib/api';
 
-type PrivacyMode = 'full' | 'partial' | 'private';
-
-const KEY = 'noor-web-privacy-mode';
-
 export function SettingsPanel() {
-  const [mode, setMode] = useState<PrivacyMode>('full');
+  const { bookmarks, privacyMode, setPrivacyMode, trackerEntries, user } = useAuth();
   const [status, setStatus] = useState('checking');
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(KEY) as PrivacyMode | null;
-    if (saved) setMode(saved);
-
     void fetch(`${apiBaseUrl}/api/health`, { cache: 'no-store' })
       .then((response) => setStatus(response.ok ? 'connected' : 'error'))
       .catch(() => setStatus('error'));
   }, []);
 
-  function update(next: PrivacyMode) {
-    setMode(next);
-    window.localStorage.setItem(KEY, next);
-  }
-
   function exportData() {
     const payload = {
-      privacyMode: mode,
+      privacyMode,
       tracker: JSON.parse(window.localStorage.getItem('noor-web-worship-log') ?? '[]'),
       bookmarks: JSON.parse(window.localStorage.getItem('noor-web-bookmarks') ?? '[]'),
     };
@@ -44,8 +33,8 @@ export function SettingsPanel() {
   function wipeData() {
     window.localStorage.removeItem('noor-web-worship-log');
     window.localStorage.removeItem('noor-web-bookmarks');
-    window.localStorage.removeItem(KEY);
-    setMode('full');
+    window.localStorage.removeItem('noor-web-privacy-mode');
+    void setPrivacyMode('full');
   }
 
   return (
@@ -55,11 +44,17 @@ export function SettingsPanel() {
         <h3>اختر أسلوب استخدامك</h3>
         <div className="chip-row">
           {(['full', 'partial', 'private'] as const).map((item) => (
-            <button key={item} className={`ghost-button ${mode === item ? 'active-chip' : ''}`} onClick={() => update(item)}>
+            <button key={item} className={`ghost-button ${privacyMode === item ? 'active-chip' : ''}`} onClick={() => void setPrivacyMode(item)}>
               {item === 'full' ? 'كامل' : item === 'partial' ? 'متوازن' : 'خاص'}
             </button>
           ))}
         </div>
+      </section>
+      <section className="feature-card">
+        <p className="feature-eyebrow">الحساب</p>
+        <h3>حالة المصادقة</h3>
+        <p className="body-copy">{user ? (user.isAnonymous ? 'أنت تستخدم جلسة ضيف.' : `تم تسجيل الدخول كبريد: ${user.email ?? 'مستخدم'}`) : 'لم يتم تسجيل الدخول بعد.'}</p>
+        <p className="body-copy">العلامات المرجعية: {bookmarks.length} · سجلات العبادة: {trackerEntries.length}</p>
       </section>
       <section className="feature-card">
         <p className="feature-eyebrow">الخلفية</p>

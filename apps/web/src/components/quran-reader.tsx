@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { useAuth } from '@/components/auth-provider';
 import type { SurahDetail } from '@/lib/types';
 
 const BOOKMARK_KEY = 'noor-web-bookmarks';
@@ -23,22 +24,24 @@ function writeBookmarks(items: Bookmark[]) {
 }
 
 export function QuranReader({ detail }: { detail: SurahDetail }) {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>(() => readBookmarks());
+  const { bookmarks: syncedBookmarks, setBookmarks } = useAuth();
+  const [bookmarks] = useState<Bookmark[]>(() => readBookmarks());
   const [copied, setCopied] = useState('');
 
   const isBookmarked = useMemo(
-    () => new Set(bookmarks.map((item) => `${item.surah}:${item.ayah}`)),
-    [bookmarks]
+    () => new Set((syncedBookmarks.length ? syncedBookmarks : bookmarks).map((item) => `${item.surah}:${item.ayah}`)),
+    [bookmarks, syncedBookmarks]
   );
 
   function toggleBookmark(ayahNumber: number) {
     const key = `${detail.surah.id}:${ayahNumber}`;
-    const exists = bookmarks.some((item) => `${item.surah}:${item.ayah}` === key);
+    const source = syncedBookmarks.length ? syncedBookmarks : bookmarks;
+    const exists = source.some((item) => `${item.surah}:${item.ayah}` === key);
     const next = exists
-      ? bookmarks.filter((item) => `${item.surah}:${item.ayah}` !== key)
-      : [{ surah: detail.surah.id, ayah: ayahNumber, label: `${detail.surah.name} - ${ayahNumber}` }, ...bookmarks];
-    setBookmarks(next);
+      ? source.filter((item) => `${item.surah}:${item.ayah}` !== key)
+      : [{ surah: detail.surah.id, ayah: ayahNumber, label: `${detail.surah.name} - ${ayahNumber}` }, ...source];
     writeBookmarks(next);
+    void setBookmarks(next);
   }
 
   async function copyVerse(text: string) {

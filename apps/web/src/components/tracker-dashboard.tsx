@@ -1,6 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+import { useAuth } from '@/components/auth-provider';
+import { saveTrackerEntries } from '@/lib/firebase';
 
 const STORAGE_KEY = 'noor-web-worship-log';
 
@@ -35,7 +38,14 @@ function writeEntries(entries: TrackerEntry[]) {
 }
 
 export function TrackerDashboard() {
-  const [entries, setEntries] = useState<TrackerEntry[]>(() => readEntries());
+  const { user, trackerEntries, setTrackerEntries } = useAuth();
+  const [entries, setEntries] = useState<TrackerEntry[]>(() => (trackerEntries.length ? trackerEntries : readEntries()));
+
+  useEffect(() => {
+    if (trackerEntries.length) {
+      setEntries(trackerEntries);
+    }
+  }, [trackerEntries]);
 
   const summary = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -55,7 +65,14 @@ export function TrackerDashboard() {
     ].slice(0, 60);
     setEntries(next);
     writeEntries(next);
+    setTrackerEntries(next);
+    if (user && !user.isAnonymous) {
+      void saveTrackerEntries(user.uid, next);
+    }
   }
+
+  const fastingStreak = useMemo(() => entries.filter((entry) => entry.activity === 'fast_fard' || entry.activity === 'fast_nafl').length, [entries]);
+  const tahajjudStreak = useMemo(() => entries.filter((entry) => entry.activity === 'tahajjud').length, [entries]);
 
   return (
     <div className="tracker-shell">
@@ -63,6 +80,11 @@ export function TrackerDashboard() {
         <article className="metric-card"><span>اليوم</span><strong>{summary.todayCount}</strong></article>
         <article className="metric-card"><span>إجمالي السجل</span><strong>{summary.total}</strong></article>
         <article className="metric-card"><span>صفحات القرآن</span><strong>{summary.quranPages}</strong></article>
+      </section>
+      <section className="content-grid three-up compact-top-gap">
+        <article className="metric-card"><span>صيام هذا الشهر</span><strong>{fastingStreak}</strong></article>
+        <article className="metric-card"><span>قيام الليل</span><strong>{tahajjudStreak}</strong></article>
+        <article className="metric-card"><span>المزامنة</span><strong>{user && !user.isAnonymous ? 'Firebase' : 'محلي'}</strong></article>
       </section>
       <section className="feature-card">
         <p className="feature-eyebrow">قائمة اليوم</p>
@@ -80,6 +102,27 @@ export function TrackerDashboard() {
             <strong>{entry.activity}</strong>
           </div>
         ))}
+      </section>
+      <section className="feature-card">
+        <p className="feature-eyebrow">تصدير</p>
+        <h3>تقريرك الحالي</h3>
+        <p className="body-copy">يمكنك نسخ هذا الملخص أو حفظه محلياً من خلال متصفحك.</p>
+        <pre className="tracker-export">{JSON.stringify(entries.slice(0, 12), null, 2)}</pre>
+      </section>
+      <section className="feature-card">
+        <p className="feature-eyebrow">آخر الأنشطة</p>
+        <h3>ملخص آخر التسجيلات</h3>
+        <div className="result-list">
+          {entries.slice(0, 8).map((entry, index) => (
+            <article key={`${entry.date}-${entry.activity}-${index}`} className="result-item compact-result">
+              <div className="result-meta">
+                <span>{entry.date}</span>
+                <span>{entry.value}</span>
+              </div>
+              <p className="body-copy">{entry.activity}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </div>
   );

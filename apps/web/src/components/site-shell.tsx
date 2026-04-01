@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { AuthPanel } from '@/components/auth-panel';
+
 const navItems = [
   { href: '/', label: 'الرئيسية' },
   { href: '/quran', label: 'القرآن' },
@@ -29,6 +31,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+        <AuthPanel />
       </header>
       {children}
     </div>

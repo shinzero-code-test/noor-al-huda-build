@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Amiri, Cairo } from 'next/font/google';
 
+import { AuthProvider } from '@/components/auth-provider';
 import './globals.css';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-cairo' });
@@ -14,7 +15,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} ${amiri.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
