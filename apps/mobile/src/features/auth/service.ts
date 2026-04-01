@@ -61,19 +61,27 @@ export function useGoogleSignIn() {
   const androidUnsupported = Platform.OS === 'android';
   const enabled = hasGoogleAuthConfig && !androidUnsupported;
   const googleConfig = useMemo(
-    () => ({
-      webClientId: googleAuthConfig.webClientId,
-      androidClientId: googleAuthConfig.androidClientId,
-      iosClientId: googleAuthConfig.iosClientId,
-      selectAccount: true,
-      scopes: ['profile', 'email'],
-    }),
-    []
+    () =>
+      androidUnsupported
+        ? {}
+        : {
+            webClientId: googleAuthConfig.webClientId,
+            androidClientId: googleAuthConfig.androidClientId,
+            iosClientId: googleAuthConfig.iosClientId,
+            selectAccount: true,
+            scopes: ['profile', 'email'],
+          },
+    [androidUnsupported]
   );
 
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest(googleConfig, {
-    native: makeRedirectUri({ native: 'nooralhuda:/oauthredirect' }),
-  });
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest(
+    googleConfig,
+    androidUnsupported
+      ? undefined
+      : {
+          native: makeRedirectUri({ native: 'nooralhuda:/oauthredirect' }),
+        }
+  );
 
   useEffect(() => {
     void WebBrowser.warmUpAsync();
@@ -160,7 +168,11 @@ export function useGoogleSignIn() {
     canStart: enabled && Boolean(request) && !loading,
     signIn: async () => {
       if (!enabled) {
-        throw new Error('Google sign-in is not configured yet.');
+        throw new Error(
+          androidUnsupported
+            ? 'Google Sign-In معطّل حالياً على Android في هذا الإصدار الإنتاجي.'
+            : 'Google sign-in is not configured yet.'
+        );
       }
 
       if (!request) {
