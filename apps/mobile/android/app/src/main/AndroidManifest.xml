@@ -39,7 +39,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="nooralhuda"/>
-        <data android:scheme="exp+noor-al-huda"/>
       </intent-filter>
       <intent-filter android:autoVerify="true" data-generated="true">
         <action android:name="android.intent.action.VIEW"/>
@@ -48,5 +47,11 @@
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity>
+    <receiver android:name=".widget.PrayerWidgetProvider" android:exported="false">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/prayer_widget_info"/>
+    </receiver>
   </application>
 </manifest>

@@ -1,33 +1,3 @@
-export function mapGoogleAuthError(message?: string) {
-  const value = message?.toLowerCase() ?? '';
-
-  if (!value) {
-    return 'تعذر تسجيل الدخول بجوجل. حاول مرة أخرى.';
-  }
-
-  if (value.includes('network') || value.includes('timeout')) {
-    return 'تعذر الوصول إلى Google أو Firebase. تحقق من الاتصال ثم أعد المحاولة.';
-  }
-
-  if (value.includes('play services')) {
-    return 'خدمات Google Play غير متاحة على هذا الجهاز أو تحتاج إلى تحديث.';
-  }
-
-  if (value.includes('account-exists-with-different-credential')) {
-    return 'يوجد حساب بنفس البريد باستخدام مزود تسجيل دخول مختلف.';
-  }
-
-  if (value.includes('redirect_uri_mismatch')) {
-    return 'إعداد redirect URI أو عميل Google غير مطابق لتكوين Firebase.';
-  }
-
-  if (value.includes('developer_error') || value.includes('invalid_audience')) {
-    return 'إعدادات عميل Google غير مكتملة للتطبيق الحالي. أعد تحميل ملفات Firebase أو تحقق من SHA.';
-  }
-
-  return 'تعذر تسجيل الدخول بجوجل. حاول مرة أخرى.';
-}
-
 export function mapFirebaseAuthError(message?: string) {
   const value = message?.toLowerCase() ?? '';
 

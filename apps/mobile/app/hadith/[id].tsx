@@ -74,9 +74,6 @@ export default function HadithDetailScreen() {
           />
           <Text style={styles.body}>{query.data.text}</Text>
           <Text style={styles.source}>{query.data.source}</Text>
-          <Text style={styles.note}>
-            عند توفّر الاتصال بالخادم سيُحمَّل النصّ الموسّع ودرجة الحديث ومراجع الكتاب من Cloudflare Worker.
-          </Text>
           <View style={styles.actions}>
             <GhostButton
               label="الإبلاغ كمصدر غير صحيح"

@@ -2,13 +2,6 @@ import type { ExpoConfig } from 'expo/config';
 
 const apiBaseUrl =
   process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://noor-al-huda-api.shinzero.workers.dev';
-const androidDebugClientId =
-  process.env.EXPO_PUBLIC_FIREBASE_ANDROID_DEBUG_CLIENT_ID ??
-  '1024474386791-mth34nki4vjlh0vohnsp8uo1onk0u0bl.apps.googleusercontent.com';
-const androidReleaseClientId =
-  process.env.EXPO_PUBLIC_FIREBASE_ANDROID_RELEASE_CLIENT_ID ??
-  '1024474386791-ke5e2cul293465ugnkmvottp73u772hc.apps.googleusercontent.com';
-
 const config: ExpoConfig = {
   name: 'نور الهدى',
   owner: 'shinzero',
@@ -82,12 +75,6 @@ const config: ExpoConfig = {
     'expo-font',
     'expo-sqlite',
     [
-      '@react-native-google-signin/google-signin',
-      {
-        iosUrlScheme: 'com.googleusercontent.apps.1024474386791-s5uf8704i6gkaufb07u2u9non124i5j6'
-      }
-    ],
-    [
       'expo-audio',
       {
         microphonePermission: 'نحتاج الميكروفون لتسجيل التلاوة والأوامر الصوتية.',
@@ -133,11 +120,6 @@ const config: ExpoConfig = {
       projectNumber: '1024474386791',
       androidAppId: '1:1024474386791:android:3012220cd3906a662adfc2',
       iosAppId: '1:1024474386791:ios:8516d339d51848f22adfc2',
-      webClientId: '1024474386791-knn9lhb6s0h3q4k14vbgkkl0h3chm8io.apps.googleusercontent.com',
-      androidDebugClientId,
-      androidReleaseClientId,
-      iosClientId: '1024474386791-s5uf8704i6gkaufb07u2u9non124i5j6.apps.googleusercontent.com',
-      reversedIosClientId: 'com.googleusercontent.apps.1024474386791-s5uf8704i6gkaufb07u2u9non124i5j6',
     },
   },
 };

@@ -16,12 +16,6 @@ type AuthWindowProps = {
   onGuest: () => void;
   onResetPassword: () => void;
   onMagicLink: () => void;
-  onGoogle: () => void;
-  googleEnabled: boolean;
-  googleLoading: boolean;
-  googleInfo?: string | null;
-  googleError?: string | null;
-  googleReady?: boolean;
 };
 
 export function AuthWindow({
@@ -37,40 +31,21 @@ export function AuthWindow({
   onGuest,
   onResetPassword,
   onMagicLink,
-  onGoogle,
-  googleEnabled,
-  googleLoading,
-  googleInfo,
-  googleError,
-  googleReady,
 }: AuthWindowProps) {
   return (
     <SurfaceCard accent="blue">
       <View style={styles.logoRow}>
         <Image source={require('../../../../assets/icon.png')} style={styles.logo} resizeMode="cover" />
         <View style={styles.logoTextWrap}>
-          <Text style={styles.logoTitle}>بوابة نور الهدى</Text>
-          <Text style={styles.logoSubtitle}>سجّل الدخول لمزامنة قراءتك وإعداداتك والوصول الهادئ إلى كل أدوات التطبيق.</Text>
+          <Text style={styles.logoTitle}>دخول نور الهدى</Text>
+          <Text style={styles.logoSubtitle}>ادخل بحسابك أو استخدم التطبيق كضيف.</Text>
         </View>
       </View>
 
       <View style={styles.providerRow}>
         <Text style={styles.providerChip}>Email</Text>
-        <Text style={styles.providerChip}>{googleEnabled ? 'Google' : 'Google لاحقاً'}</Text>
         <Text style={styles.providerChip}>Guest</Text>
       </View>
-
-      {googleEnabled ? (
-        <PrimaryButton
-          label={googleLoading ? 'جارٍ فتح Google...' : 'المتابعة باستخدام Google'}
-          tone="emerald"
-          disabled={authLoading || googleLoading || !googleReady}
-          onPress={onGoogle}
-        />
-      ) : null}
-
-      {googleInfo ? <Text style={styles.helperText}>{googleInfo}</Text> : null}
-      {googleError ? <Text style={styles.errorText}>{googleError}</Text> : null}
 
       <View style={styles.formStack}>
         <TextField value={name} onChangeText={onChangeName} placeholder="الاسم (اختياري)" />
@@ -83,12 +58,8 @@ export function AuthWindow({
           <GhostButton label="الدخول كضيف" onPress={onGuest} disabled={authLoading} />
         </View>
 
-        <GhostButton label="إرسال رابط إعادة تعيين كلمة المرور" onPress={onResetPassword} disabled={authLoading || !email.trim()} />
-        <GhostButton label="إرسال رابط دخول بدون كلمة مرور" onPress={onMagicLink} disabled={authLoading || !email.trim()} />
-
-        <Text style={styles.helperText}>
-          يمكن أيضاً الدخول برابط بريدي بدون كلمة مرور. افتح الرابط على نفس الجهاز لإكمال الجلسة تلقائياً.
-        </Text>
+        <GhostButton label="إعادة تعيين كلمة المرور" onPress={onResetPassword} disabled={authLoading || !email.trim()} />
+        <GhostButton label="إرسال رابط الدخول" onPress={onMagicLink} disabled={authLoading || !email.trim()} />
       </View>
     </SurfaceCard>
   );
@@ -144,19 +115,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     flexWrap: 'wrap',
-  },
-  helperText: {
-    color: theme.colors.creamFaint,
-    fontFamily: theme.fonts.body,
-    fontSize: 13,
-    lineHeight: 21,
-    textAlign: 'right',
-  },
-  errorText: {
-    color: '#F6A6A6',
-    fontFamily: theme.fonts.body,
-    fontSize: 13,
-    lineHeight: 21,
-    textAlign: 'right',
   },
 });

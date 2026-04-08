@@ -18,14 +18,12 @@ import {
   PrimaryButton,
   SectionHeader,
   SurfaceCard,
-  TextField,
 } from '../../src/components/ui';
 import { fetchDailyContent } from '../../src/features/daily/service';
 import {
   authActions,
   mapFirebaseAuthError,
   useAuthUser,
-  useGoogleSignIn,
 } from '../../src/features/auth/service';
 import { AuthWindow } from '../../src/features/auth/components/AuthWindow';
 import { buildRamadanInfo, fetchPrayerTimes } from '../../src/features/prayer/service';
@@ -33,16 +31,14 @@ import { formatFullDate, formatMinutes, prayerLabels } from '../../src/lib/forma
 import { syncUserSettings } from '../../src/lib/firebase';
 import { theme } from '../../src/lib/theme';
 import { useSeasonalTheme } from '../../src/shared/hooks/useSeasonalTheme';
+import { updatePrayerWidget } from '../../src/features/widgets/WidgetBridge';
 import { storage } from '../../src/lib/mmkv';
 import { useAppStore } from '../../src/store/app-store';
 
 export default function HomeScreen() {
   const settings = useAppStore((state) => state.settings);
   const bookmarks = useAppStore((state) => state.bookmarks);
-  const syncMessage = useAppStore((state) => state.syncMessage);
-  const syncStatus = useAppStore((state) => state.syncStatus);
   const { initializing, user, refresh } = useAuthUser();
-  const googleSignIn = useGoogleSignIn();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -102,6 +98,7 @@ export default function HomeScreen() {
     }
 
     storage.set('today_prayer_times', JSON.stringify(prayerQuery.data.prayers));
+    void updatePrayerWidget(prayerQuery.data);
   }, [prayerQuery.data]);
 
   return (
@@ -117,18 +114,12 @@ export default function HomeScreen() {
           subtitle={`${formatFullDate(new Date())} · ${settings.location.label}`}
         />
         {seasonalTheme.specialGreeting ? <Text style={styles.greeting}>{seasonalTheme.specialGreeting}</Text> : null}
-        <Text style={styles.heroText}>
-          مركز يومي للقرآن، الصلاة، الأذكار، والإذاعات الإسلامية مع دعم Offline وتخزين ذكي.
-        </Text>
-        <Text style={styles.syncLine}>
-          حالة المزامنة: {syncStatus === 'synced' ? 'متصلة' : syncStatus === 'syncing' ? 'جارٍ التحديث' : syncStatus === 'error' ? 'بحاجة لتدخل' : 'محلية'}
-          {syncMessage ? ` · ${syncMessage}` : ''}
-        </Text>
+        <Text style={styles.heroText}>قرآن وصلاة وأذكار وإذاعات.</Text>
         <View style={styles.metricRow}>
           <MetricTile
             label="الوجهة الحالية"
             value={settings.location.label}
-            hint={prayerQuery.data?.source === 'worker' ? 'عبر Cloudflare Worker' : 'حساب محلي'}
+            hint=""
           />
           <MetricTile
             label="الوقت القادم"
@@ -144,12 +135,12 @@ export default function HomeScreen() {
                 ? `${prayerQuery.data.qiblaDegrees.toFixed(1)}°`
                 : '--'
             }
-            hint="من موقعك الحالي"
+            hint=""
           />
           <MetricTile
             label="الإشارات المرجعية"
             value={`${bookmarks.length}`}
-            hint="متزامنة محلياً وFirebase"
+            hint=""
           />
         </View>
         <View style={styles.heroActionsRow}>
@@ -185,7 +176,7 @@ export default function HomeScreen() {
           </SurfaceCard>
         </>
       ) : (
-        <EmptyState title="لا يوجد محتوى يومي" message="سيظهر حديث وآية اليوم بعد أول مزامنة ناجحة." />
+        <EmptyState title="لا يوجد محتوى يومي" message="حاول لاحقاً." />
       )}
 
       {seasonalTheme.id === 'ramadan' ? (
@@ -219,16 +210,13 @@ export default function HomeScreen() {
 
       <SurfaceCard accent="blue">
         <SectionHeader
-          title="الحساب والمزامنة"
+          title="الحساب"
           subtitle={initializing ? 'جارٍ التحقق من الجلسة...' : `الحالة: ${userLabel}`}
         />
-        <Text style={styles.bodyText}>
-          التطبيق يزامن الإعدادات، آخر موضع قراءة، والإشارات المرجعية إلى Firebase عند تسجيل الدخول.
-        </Text>
+        <Text style={styles.bodyText}>ادخل بحسابك أو استخدم التطبيق كضيف.</Text>
         {!user ? (
           <View style={styles.providerRow}>
             <Text style={styles.providerChip}>Email</Text>
-            <Text style={styles.providerChip}>{googleSignIn.enabled ? 'Google' : 'Google قريباً'}</Text>
             <Text style={styles.providerChip}>Guest</Text>
           </View>
         ) : null}
@@ -274,19 +262,6 @@ export default function HomeScreen() {
                 'تم إرسال رابط الدخول إلى بريدك الإلكتروني. افتحه على نفس الجهاز لإكمال الدخول.'
               )
             }
-            onGoogle={() => {
-              void googleSignIn.signIn().catch((error) => {
-                Alert.alert(
-                  'تعذر تسجيل الدخول',
-                  error instanceof Error ? error.message : 'حاول مرة أخرى.'
-                );
-              });
-            }}
-            googleEnabled={googleSignIn.enabled}
-            googleLoading={googleSignIn.loading || googleSignIn.stage === 'opening' || googleSignIn.stage === 'verifying'}
-            googleInfo={googleSignIn.info}
-            googleError={googleSignIn.error}
-            googleReady={googleSignIn.ready}
           />
         ) : (
           <View style={styles.formStack}>
@@ -327,18 +302,18 @@ export default function HomeScreen() {
               {user.isAnonymous
                 ? 'أنت الآن داخل جلسة ضيف. يمكنك لاحقاً إنشاء حساب دائم للاحتفاظ ببياناتك عبر الأجهزة.'
                 : user.emailVerified
-                  ? 'تم تأكيد بريدك الإلكتروني وربط بياناتك مع Firebase.'
-                  : 'حسابك مرتبط بـ Firebase لكن بريدك الإلكتروني لم يُؤكد بعد.'}
+                  ? 'تم تأكيد بريدك الإلكتروني.'
+                  : 'بريدك غير مؤكد بعد.'}
             </Text>
             <PrimaryButton
-              label="مزامنة الإعدادات الآن"
+              label="حفظ الإعدادات الآن"
               tone="emerald"
               onPress={() =>
                 handleAction(
                   async () => {
                     await syncUserSettings(user.uid, settings);
                   },
-                  'تمت مزامنة بياناتك إلى Firebase.'
+                  'تم حفظ الإعدادات.'
                 )
               }
             />
@@ -372,13 +347,6 @@ const styles = StyleSheet.create({
     height: 148,
     borderRadius: 18,
     opacity: 0.92,
-  },
-  syncLine: {
-    color: theme.colors.goldLight,
-    fontFamily: theme.fonts.body,
-    fontSize: 13,
-    lineHeight: 21,
-    textAlign: 'right',
   },
   metricRow: {
     flexDirection: 'row',

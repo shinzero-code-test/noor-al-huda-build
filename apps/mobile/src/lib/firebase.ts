@@ -1,11 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
-import { Platform } from 'react-native';
 import { getApp, getApps, initializeApp, type FirebaseApp } from 'firebase/app';
 import {
   createUserWithEmailAndPassword,
   getAuth,
-  GoogleAuthProvider,
   initializeAuth,
   isSignInWithEmailLink,
   onAuthStateChanged,
@@ -14,7 +12,6 @@ import {
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
   signInAnonymously,
-  signInWithCredential,
   signInWithEmailLink,
   signInWithEmailAndPassword,
   signOut,
@@ -52,11 +49,6 @@ type FirebaseExtra = {
     authDomain?: string;
     messagingSenderId?: string;
     storageBucket?: string;
-    webClientId?: string;
-    androidDebugClientId?: string;
-    androidReleaseClientId?: string;
-    iosClientId?: string;
-    reversedIosClientId?: string;
   };
 };
 
@@ -89,18 +81,6 @@ export const auth = firebaseApp
 export const db = firebaseApp ? getFirestore(firebaseApp) : null;
 
 export { hasFirebaseConfig };
-
-export const googleAuthConfig = {
-  webClientId: firebaseConfig?.webClientId ?? '',
-  androidClientId: firebaseConfig?.androidDebugClientId ?? firebaseConfig?.androidReleaseClientId ?? '',
-  iosClientId: firebaseConfig?.iosClientId ?? '',
-};
-
-export const hasGoogleAuthConfig = Boolean(
-  googleAuthConfig.webClientId &&
-    googleAuthConfig.androidClientId &&
-    googleAuthConfig.iosClientId
-);
 
 export function subscribeToAuth(callback: (user: User | null) => void): () => void {
   if (!auth) {
@@ -139,16 +119,6 @@ export async function continueAsGuest() {
 
   const credential = await signInAnonymously(auth);
   return credential.user;
-}
-
-export async function loginWithGoogleIdToken(idToken: string) {
-  if (!auth) {
-    throw new Error('Firebase Auth is not configured.');
-  }
-
-  const credential = GoogleAuthProvider.credential(idToken);
-  const result = await signInWithCredential(auth, credential);
-  return result.user;
 }
 
 export async function sendPasswordResetLink(email: string) {
