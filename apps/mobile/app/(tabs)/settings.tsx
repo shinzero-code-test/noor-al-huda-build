@@ -1,9 +1,13 @@
 import Constants from 'expo-constants';
 import { Link } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { GhostButton, Page, SectionHeader, SurfaceCard } from '../../src/components/ui';
 import { useAuthUser } from '../../src/features/auth/service';
+import { fetchDailyContent } from '../../src/features/daily/service';
+import { fetchHadithCollections } from '../../src/features/hadith/service';
+import { fetchAzkarCollection } from '../../src/features/azkar/service';
+import { fetchSurahDetail, fetchSurahList } from '../../src/features/quran/service';
 import { theme } from '../../src/lib/theme';
 import { useAppStore } from '../../src/store/app-store';
 
@@ -25,6 +29,23 @@ export default function SettingsScreen() {
   const setAdhanSound = useAppStore((state) => state.setAdhanSound);
   const setNotificationsEnabled = useAppStore((state) => state.setNotificationsEnabled);
   const { user } = useAuthUser();
+
+  async function cacheCoreContent() {
+    try {
+      const surahs = await fetchSurahList();
+      await Promise.all([
+        fetchDailyContent(),
+        fetchAzkarCollection('morning'),
+        fetchAzkarCollection('evening'),
+        fetchAzkarCollection('after-prayer'),
+        fetchHadithCollections(),
+        ...surahs.slice(0, 10).map((item) => fetchSurahDetail(item.id)),
+      ]);
+      Alert.alert('تم الحفظ', 'تم تنزيل المحتوى الأساسي للاستخدام دون اتصال.');
+    } catch (error) {
+      Alert.alert('تعذر التنزيل', error instanceof Error ? error.message : 'حدث خطأ أثناء تنزيل المحتوى.');
+    }
+  }
 
   return (
     <Page>
@@ -62,6 +83,7 @@ export default function SettingsScreen() {
         <SectionHeader title="التطبيق" subtitle="معلومات عامة" />
         <Text style={styles.bodyText}>الإصدار: {Constants.expoConfig?.version ?? '1.0.0'}</Text>
         <Text style={styles.bodyText}>آخر سورة: {lastReadSurahId ?? 'لا يوجد'}</Text>
+        <GhostButton label="تنزيل المحتوى الأساسي دون إنترنت" onPress={() => void cacheCoreContent()} />
         {lastReadSurahId ? (
           <Link href={`/quran/${lastReadSurahId}`} asChild>
             <GhostButton label="فتح آخر سورة" onPress={() => undefined} />
