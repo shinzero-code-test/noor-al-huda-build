@@ -4,8 +4,8 @@
     android:shortcutId="quran_shortcut"
     android:enabled="true"
     android:icon="@mipmap/ic_launcher"
-    android:shortcutShortLabel="القرآن"
-    android:shortcutLongLabel="افتح القرآن الكريم">
+    android:shortcutShortLabel="@string/shortcut_quran_short"
+    android:shortcutLongLabel="@string/shortcut_quran_long">
     <intent
       android:action="android.intent.action.VIEW"
       android:targetPackage="com.nooralhuda.app"
@@ -17,8 +17,8 @@
     android:shortcutId="prayer_shortcut"
     android:enabled="true"
     android:icon="@mipmap/ic_launcher"
-    android:shortcutShortLabel="الصلاة"
-    android:shortcutLongLabel="افتح مواقيت الصلاة">
+    android:shortcutShortLabel="@string/shortcut_prayer_short"
+    android:shortcutLongLabel="@string/shortcut_prayer_long">
     <intent
       android:action="android.intent.action.VIEW"
       android:targetPackage="com.nooralhuda.app"
@@ -29,8 +29,8 @@
     android:shortcutId="azkar_shortcut"
     android:enabled="true"
     android:icon="@mipmap/ic_launcher"
-    android:shortcutShortLabel="الأذكار"
-    android:shortcutLongLabel="افتح الأذكار">
+    android:shortcutShortLabel="@string/shortcut_azkar_short"
+    android:shortcutLongLabel="@string/shortcut_azkar_long">
     <intent
       android:action="android.intent.action.VIEW"
       android:targetPackage="com.nooralhuda.app"

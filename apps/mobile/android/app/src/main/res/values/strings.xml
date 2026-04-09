@@ -1,6 +1,12 @@
 <resources>
   <string name="app_name">نور الهدى</string>
   <string name="prayer_widget_description">يعرض الصلاة القادمة من نور الهدى</string>
+  <string name="shortcut_quran_short">القرآن</string>
+  <string name="shortcut_quran_long">افتح القرآن الكريم</string>
+  <string name="shortcut_prayer_short">الصلاة</string>
+  <string name="shortcut_prayer_long">افتح مواقيت الصلاة</string>
+  <string name="shortcut_azkar_short">الأذكار</string>
+  <string name="shortcut_azkar_long">افتح الأذكار</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
   <string name="expo_system_ui_user_interface_style" translatable="false">automatic</string>
   <string name="expo_runtime_version">1.0.0</string>
