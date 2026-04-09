@@ -164,3 +164,16 @@ export interface ProphetStory {
   summary: string;
   lessons: string[];
 }
+
+export interface PrayerLogEntry {
+  prayer: PrayerName;
+  date: string;
+  status: 'performed' | 'missed' | 'made_up';
+}
+
+export interface ReciterDownload {
+  surahId: number;
+  reciterId: string;
+  fileUri: string;
+  downloadedAt: string;
+}

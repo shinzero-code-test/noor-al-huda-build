@@ -1,8 +1,10 @@
 import { z } from 'zod';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { buildFallbackSurahDetail, fallbackSurahs } from '../../data/fallback';
 import { getCachedContent, putCachedContent } from '../../lib/sqlite';
 import {
+  type ReciterDownload,
   type SurahDetail,
   type QuranReciterCollection,
   type QuranTafsirCollection,
@@ -125,7 +127,8 @@ const mp3RecitersSchema = z.object({
   ),
 });
 
-const defaultTranslationIds = ['en.asad', 'en.pickthall', 'ar.muyassar'];
+const preferredTranslationLanguages = new Set(['ar', 'en', 'ur', 'fr', 'tr', 'es', 'id', 'ru']);
+const defaultTranslationIds = ['en.asad', 'en.pickthall', 'ur.jalandhry', 'fr.hamidullah', 'tr.diyanet', 'es.cortes', 'id.indonesian'];
 const defaultTafsirIds = ['ar.muyassar', 'en.asad'];
 
 export async function fetchSurahList() {
@@ -160,7 +163,9 @@ export async function fetchTranslationCollections(): Promise<QuranTranslationCol
     }
     const payload = alQuranEditionSchema.parse(await response.json());
     const result = payload.data
-      .filter((item) => item.type === 'translation' && defaultTranslationIds.includes(item.identifier))
+      .filter((item) => item.type === 'translation' && preferredTranslationLanguages.has(item.language))
+      .sort((left, right) => Number(defaultTranslationIds.includes(right.identifier)) - Number(defaultTranslationIds.includes(left.identifier)))
+      .slice(0, 12)
       .map((item) => ({
         id: item.identifier,
         label: item.language === 'ar' ? `${item.name} (عربي)` : item.englishName,
@@ -318,4 +323,28 @@ export function buildReciterAudioUrl(reciter: QuranReciterCollection | undefined
   }
 
   return `${reciter.server}${String(surahId).padStart(3, '0')}.mp3`;
+}
+
+export async function downloadReciterAudio(reciter: QuranReciterCollection | undefined, surahId: number): Promise<ReciterDownload> {
+  const url = buildReciterAudioUrl(reciter, surahId);
+  const directory = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
+  if (!directory) {
+    throw new Error('تعذر الوصول إلى مساحة التخزين المحلية.');
+  }
+  const fileUri = `${directory}reciters/${reciter?.id ?? 'default'}-${String(surahId).padStart(3, '0')}.mp3`;
+  const folderUri = fileUri.split('/').slice(0, -1).join('/');
+  await FileSystem.makeDirectoryAsync(folderUri, { intermediates: true });
+  await FileSystem.downloadAsync(url, fileUri);
+  const payload: ReciterDownload = {
+    surahId,
+    reciterId: reciter?.id ?? 'default',
+    fileUri,
+    downloadedAt: new Date().toISOString(),
+  };
+  await putCachedContent('quran-downloads', `${payload.reciterId}:${surahId}`, payload);
+  return payload;
+}
+
+export async function getDownloadedReciterAudio(reciterId: string, surahId: number) {
+  return getCachedContent<ReciterDownload>('quran-downloads', `${reciterId}:${surahId}`);
 }

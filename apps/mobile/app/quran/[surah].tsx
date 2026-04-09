@@ -6,7 +6,7 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 're
 import { GhostButton, Page, PrimaryButton, SectionHeader, SurfaceCard } from '../../src/components/ui';
 import { SelectSheet } from '../../src/components/SelectSheet';
 import { useAuthUser } from '../../src/features/auth/service';
-import { buildReciterAudioUrl, fetchReciterCollections, fetchSurahDetail, fetchTafsirCollections, fetchTranslationCollections } from '../../src/features/quran/service';
+import { buildReciterAudioUrl, downloadReciterAudio, fetchReciterCollections, fetchSurahDetail, fetchTafsirCollections, fetchTranslationCollections, getDownloadedReciterAudio } from '../../src/features/quran/service';
 import { useAudioPlayer } from '../../src/hooks/useAudioPlayer';
 import { theme } from '../../src/lib/theme';
 import { useAppStore } from '../../src/store/app-store';
@@ -27,6 +27,7 @@ export default function SurahDetailScreen() {
   const audioPlayer = useAudioPlayer();
   const [selectedTranslationId, setSelectedTranslationId] = useState('en.asad');
   const [selectedTafsirId, setSelectedTafsirId] = useState('ar.muyassar');
+  const [downloadedAudioUri, setDownloadedAudioUri] = useState<string | null>(null);
 
   const translationsQuery = useQuery({ queryKey: ['translation-collections'], queryFn: fetchTranslationCollections });
   const tafsirQuery = useQuery({ queryKey: ['tafsir-collections'], queryFn: fetchTafsirCollections });
@@ -37,6 +38,22 @@ export default function SurahDetailScreen() {
     [recitersQuery.data, settings.reciter]
   );
   const targetAudio = useMemo(() => buildReciterAudioUrl(selectedReciter, surahId), [selectedReciter, surahId]);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!selectedReciter) {
+      setDownloadedAudioUri(null);
+      return;
+    }
+    void getDownloadedReciterAudio(selectedReciter.id, surahId).then((item) => {
+      if (mounted) {
+        setDownloadedAudioUri(item?.fileUri ?? null);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [selectedReciter, surahId]);
 
   const surahQuery = useQuery({
     queryKey: ['surah-detail', surahId, selectedTranslationId, selectedTafsirId, selectedReciter?.id],
@@ -158,19 +175,34 @@ export default function SurahDetailScreen() {
               {targetAudio ? (
                 <PrimaryButton
                   label={
-                    audioPlayer.currentUrl === targetAudio && audioPlayer.isPlaying
+                    audioPlayer.currentUrl === (downloadedAudioUri ?? targetAudio) && audioPlayer.isPlaying
                       ? 'إيقاف مؤقت'
                       : 'استماع'
                   }
                   onPress={() => {
-                    if (audioPlayer.currentUrl === targetAudio) {
+                    const activeAudio = downloadedAudioUri ?? targetAudio;
+                    if (audioPlayer.currentUrl === activeAudio) {
                       void audioPlayer.toggle();
-                    } else if (targetAudio) {
-                      void audioPlayer.play(targetAudio, `${surahQuery.data.surah.name} - ${selectedReciter?.name ?? 'القارئ الافتراضي'}`);
+                    } else if (activeAudio) {
+                      void audioPlayer.play(activeAudio, `${surahQuery.data.surah.name} - ${selectedReciter?.name ?? 'القارئ الافتراضي'}`);
                     }
                   }}
                 />
               ) : null}
+              <GhostButton
+                label={downloadedAudioUri ? 'تم التحميل' : 'تحميل التلاوة'}
+                onPress={() => {
+                  if (!selectedReciter) return;
+                  void downloadReciterAudio(selectedReciter, surahId)
+                    .then((item) => {
+                      setDownloadedAudioUri(item.fileUri);
+                      Alert.alert('تم التحميل', 'أصبحت التلاوة متاحة بدون إنترنت.');
+                    })
+                    .catch((error) => {
+                      Alert.alert('تعذر التحميل', error instanceof Error ? error.message : 'حدث خطأ أثناء التحميل.');
+                    });
+                }}
+              />
               <GhostButton label={isBookmarked ? 'إزالة الإشارة' : 'إشارة مرجعية'} onPress={() => void handleBookmark()} />
             </View>
             {selectedReciter ? <Text style={styles.audioMeta}>القارئ الحالي: {selectedReciter.name}</Text> : null}

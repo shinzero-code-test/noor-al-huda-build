@@ -96,6 +96,9 @@ export default function SettingsScreen() {
           <Link href="/features/knowledge" asChild>
             <GhostButton label="المعرفة الإسلامية" onPress={() => undefined} />
           </Link>
+          <Link href="/features/ramadan" asChild>
+            <GhostButton label="رمضان والمواسم" onPress={() => undefined} />
+          </Link>
           <Link href="/features/qibla" asChild>
             <GhostButton label="القبلة" onPress={() => undefined} />
           </Link>
@@ -111,14 +114,35 @@ export default function SettingsScreen() {
           <Link href="/features/kids" asChild>
             <GhostButton label="وضع الأطفال" onPress={() => undefined} />
           </Link>
+          <Link href="/features/tasbih" asChild>
+            <GhostButton label="المسبحة الذكية" onPress={() => undefined} />
+          </Link>
           <Link href="/features/ruya" asChild>
             <GhostButton label="يومية الرؤى" onPress={() => undefined} />
           </Link>
           <Link href="/features/share" asChild>
             <GhostButton label="بطاقات المشاركة" onPress={() => undefined} />
           </Link>
+          <Link href="/features/assistant" asChild>
+            <GhostButton label="المساعد الإسلامي" onPress={() => undefined} />
+          </Link>
+          <Link href="/features/quiz" asChild>
+            <GhostButton label="الاختبارات" onPress={() => undefined} />
+          </Link>
           <Link href="/features/privacy" asChild>
             <GhostButton label="الخصوصية" onPress={() => undefined} />
+          </Link>
+          <Link href="/features/profile" asChild>
+            <GhostButton label="الملف الشخصي" onPress={() => undefined} />
+          </Link>
+          <Link href="/features/privacy-policy" asChild>
+            <GhostButton label="سياسة الخصوصية" onPress={() => undefined} />
+          </Link>
+          <Link href="/features/terms" asChild>
+            <GhostButton label="شروط الاستخدام" onPress={() => undefined} />
+          </Link>
+          <Link href="/features/about" asChild>
+            <GhostButton label="من نحن" onPress={() => undefined} />
           </Link>
           <Link href="/features/voice" asChild>
             <GhostButton label="الأوامر الصوتية" onPress={() => undefined} />

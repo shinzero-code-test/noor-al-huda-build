@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
-import { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { GhostButton, Page, PrimaryButton, SectionHeader, SurfaceCard } from '../../src/components/ui';
-import { fetchPrayerTimes } from '../../src/features/prayer/service';
+import { computePrayerDateMap, fetchPrayerTimes } from '../../src/features/prayer/service';
 import { prayerLabels } from '../../src/lib/formatting';
 import {
   cancelScheduledNotificationsAsync,
@@ -18,6 +18,8 @@ import {
 import { fetchAzkarCollection } from '../../src/features/azkar/service';
 import { theme } from '../../src/lib/theme';
 import { useAppStore } from '../../src/store/app-store';
+import { type PrayerLogEntry, type PrayerName } from '../../src/types/domain';
+import { storage } from '../../src/lib/mmkv';
 
 const methods = [
   { key: 'ummAlQura', label: 'أم القرى' },
@@ -31,11 +33,31 @@ export default function PrayerScreen() {
   const setCalculationMethod = useAppStore((state) => state.setCalculationMethod);
   const setNotificationsEnabled = useAppStore((state) => state.setNotificationsEnabled);
   const [locating, setLocating] = useState(false);
+  const [prayerLog, setPrayerLog] = useState<PrayerLogEntry[]>(() => {
+    try {
+      return JSON.parse(storage.getString('prayer_log') ?? '[]') as PrayerLogEntry[];
+    } catch {
+      return [];
+    }
+  });
 
   const prayerQuery = useQuery({
     queryKey: ['prayer-screen', settings.location, settings.calculationMethod],
     queryFn: () => fetchPrayerTimes(settings.location, settings.calculationMethod),
   });
+
+  const monthlySchedule = useMemo(() => {
+    return Array.from({ length: 30 }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() + index);
+      const map = computePrayerDateMap(date, settings.location, settings.calculationMethod);
+      return {
+        label: new Intl.DateTimeFormat('ar-EG', { month: 'short', day: 'numeric' }).format(date),
+        fajr: map.fajr,
+        maghrib: map.maghrib,
+      };
+    });
+  }, [settings.calculationMethod, settings.location]);
 
   async function refreshLocation() {
     setLocating(true);
@@ -126,6 +148,12 @@ export default function PrayerScreen() {
     Alert.alert('تمت الجدولة', 'تمت إضافة الأذان وتذكيرات الصباح والمساء وورد الساعة لليوم.');
   }
 
+  function markPrayer(prayer: PrayerName, status: PrayerLogEntry['status']) {
+    const next = [{ prayer, status, date: new Date().toISOString() }, ...prayerLog].slice(0, 50);
+    setPrayerLog(next);
+    storage.set('prayer_log', JSON.stringify(next));
+  }
+
   return (
     <Page>
       <SectionHeader title="الصلاة والقبلة" subtitle={settings.location.label} />
@@ -175,10 +203,40 @@ export default function PrayerScreen() {
               <Text style={styles.prayerName}>{prayerLabels[key as keyof typeof prayerLabels]}</Text>
             </View>
           ))}
+          <View style={styles.actionRow}>
+            <GhostButton label="تسجيل فائتة الفجر" onPress={() => markPrayer('fajr', 'missed')} />
+            <GhostButton label="تم القضاء" onPress={() => markPrayer('fajr', 'made_up')} />
+          </View>
           <View style={styles.qiblaBox}>
             <Text style={styles.qiblaLabel}>اتجاه القبلة</Text>
             <Text style={styles.qiblaValue}>{prayerQuery.data.qiblaDegrees.toFixed(1)}°</Text>
           </View>
+        </SurfaceCard>
+      ) : null}
+
+      <SurfaceCard>
+        <SectionHeader title="مواقيت الشهر" subtitle="الفجر والمغرب لثلاثين يوماً" />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scheduleRow}>
+          {monthlySchedule.map((item) => (
+            <View key={item.label} style={styles.scheduleCard}>
+              <Text style={styles.scheduleDate}>{item.label}</Text>
+              <Text style={styles.scheduleTime}>الفجر: {item.fajr.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</Text>
+              <Text style={styles.scheduleTime}>المغرب: {item.maghrib.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </SurfaceCard>
+
+      {prayerLog.length ? (
+        <SurfaceCard accent="blue">
+          <SectionHeader title="سجل الفوائت والقضاء" subtitle="آخر السجلات" />
+          {prayerLog.slice(0, 8).map((entry, index) => (
+            <View key={`${entry.date}-${index}`} style={styles.logRow}>
+              <Text style={styles.logDate}>{new Date(entry.date).toLocaleDateString('ar-EG')}</Text>
+              <Text style={styles.logState}>{entry.status === 'missed' ? 'فائتة' : entry.status === 'made_up' ? 'تم القضاء' : 'مؤداة'}</Text>
+              <Text style={styles.logPrayer}>{prayerLabels[entry.prayer]}</Text>
+            </View>
+          ))}
         </SurfaceCard>
       ) : null}
     </Page>
@@ -244,5 +302,50 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyBlack,
     fontSize: 28,
     textAlign: 'right',
+  },
+  scheduleRow: {
+    gap: 12,
+  },
+  scheduleCard: {
+    width: 190,
+    borderRadius: 18,
+    padding: 14,
+    backgroundColor: theme.colors.surfaceStrong,
+    gap: 8,
+  },
+  scheduleDate: {
+    color: theme.colors.goldLight,
+    fontFamily: theme.fonts.bodyBold,
+    fontSize: 14,
+    textAlign: 'right',
+  },
+  scheduleTime: {
+    color: theme.colors.cream,
+    fontFamily: theme.fonts.body,
+    fontSize: 13,
+    textAlign: 'right',
+  },
+  logRow: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  logPrayer: {
+    color: theme.colors.cream,
+    fontFamily: theme.fonts.bodyBold,
+    fontSize: 14,
+  },
+  logState: {
+    color: theme.colors.goldLight,
+    fontFamily: theme.fonts.body,
+    fontSize: 13,
+  },
+  logDate: {
+    color: theme.colors.creamFaint,
+    fontFamily: theme.fonts.body,
+    fontSize: 12,
   },
 });
