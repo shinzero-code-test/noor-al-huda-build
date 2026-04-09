@@ -5,6 +5,8 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -44,6 +46,7 @@ export default function HomeScreen() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [authModalVisible, setAuthModalVisible] = useState(false);
 
   const prayerQuery = useQuery({
     queryKey: ['prayer-home', settings.location, settings.calculationMethod],
@@ -101,6 +104,12 @@ export default function HomeScreen() {
     void updatePrayerWidget(prayerQuery.data);
   }, [prayerQuery.data]);
 
+  useEffect(() => {
+    if (!initializing && !user) {
+      setAuthModalVisible(true);
+    }
+  }, [initializing, user]);
+
   return (
     <Page>
       <SurfaceCard>
@@ -112,6 +121,11 @@ export default function HomeScreen() {
         <SectionHeader
           title="نور الهدى"
           subtitle={`${formatFullDate(new Date())} · ${settings.location.label}`}
+          action={
+            <Link href="/features/profile" asChild>
+              <GhostButton label="الملف" onPress={() => undefined} />
+            </Link>
+          }
         />
         {seasonalTheme.specialGreeting ? <Text style={styles.greeting}>{seasonalTheme.specialGreeting}</Text> : null}
         <Text style={styles.heroText}>قرآن وصلاة وأذكار وإذاعات.</Text>
@@ -208,62 +222,12 @@ export default function HomeScreen() {
         </SurfaceCard>
       ) : null}
 
-      <SurfaceCard accent="blue">
-        <SectionHeader
-          title="الحساب"
-          subtitle={initializing ? 'جارٍ التحقق من الجلسة...' : `الحالة: ${userLabel}`}
-        />
-        <Text style={styles.bodyText}>ادخل بحسابك أو استخدم التطبيق كضيف.</Text>
-        {!user ? (
-          <View style={styles.providerRow}>
-            <Text style={styles.providerChip}>Email</Text>
-            <Text style={styles.providerChip}>Guest</Text>
-          </View>
-        ) : null}
-        {!user ? (
-          <AuthWindow
-            authLoading={authLoading}
-            email={email}
-            name={name}
-            password={password}
-            onChangeEmail={setEmail}
-            onChangeName={setName}
-            onChangePassword={setPassword}
-            onRegister={() =>
-              void handleAction(
-                async () => {
-                  await authActions.registerWithEmail(email, password, name);
-                  await authActions.sendVerificationEmailToCurrentUser();
-                },
-                'تم إنشاء الحساب وأُرسلت رسالة التحقق إلى بريدك الإلكتروني.'
-              )
-            }
-            onLogin={() =>
-              void handleAction(
-                () => authActions.loginWithEmail(email, password),
-                'تم تسجيل الدخول.'
-              )
-            }
-            onGuest={() =>
-              void handleAction(
-                () => authActions.continueAsGuest(),
-                'تم فتح جلسة ضيف بنجاح.'
-              )
-            }
-            onResetPassword={() =>
-              void handleAction(
-                () => authActions.sendPasswordResetLink(email),
-                'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني.'
-              )
-            }
-            onMagicLink={() =>
-              void handleAction(
-                () => authActions.sendPasswordlessSignInLink(email),
-                'تم إرسال رابط الدخول إلى بريدك الإلكتروني. افتحه على نفس الجهاز لإكمال الدخول.'
-              )
-            }
+      {user ? (
+        <SurfaceCard accent="blue">
+          <SectionHeader
+            title="الحساب"
+            subtitle={initializing ? 'جارٍ التحقق من الجلسة...' : `الحالة: ${userLabel}`}
           />
-        ) : (
           <View style={styles.formStack}>
             {needsVerification ? (
               <SurfaceCard accent="emerald">
@@ -322,8 +286,65 @@ export default function HomeScreen() {
               onPress={() => handleAction(() => authActions.logoutUser(), 'تم تسجيل الخروج.')}
             />
           </View>
-        )}
-      </SurfaceCard>
+        </SurfaceCard>
+      ) : null}
+
+      <Modal visible={authModalVisible && !user} transparent animationType="fade" onRequestClose={() => setAuthModalVisible(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => undefined}>
+          <View style={styles.modalCard}>
+            <AuthWindow
+              authLoading={authLoading}
+              email={email}
+              name={name}
+              password={password}
+              onChangeEmail={setEmail}
+              onChangeName={setName}
+              onChangePassword={setPassword}
+              onRegister={() =>
+                void handleAction(
+                  async () => {
+                    await authActions.registerWithEmail(email, password, name);
+                    await authActions.sendVerificationEmailToCurrentUser();
+                    setAuthModalVisible(false);
+                  },
+                  'تم إنشاء الحساب وأُرسلت رسالة التحقق إلى بريدك الإلكتروني.'
+                )
+              }
+              onLogin={() =>
+                void handleAction(
+                  async () => {
+                    await authActions.loginWithEmail(email, password);
+                    setAuthModalVisible(false);
+                  },
+                  'تم تسجيل الدخول.'
+                )
+              }
+              onGuest={() =>
+                void handleAction(
+                  async () => {
+                    await authActions.continueAsGuest();
+                    setAuthModalVisible(false);
+                  },
+                  'تم فتح جلسة ضيف بنجاح.'
+                )
+              }
+              onResetPassword={() =>
+                void handleAction(
+                  () => authActions.sendPasswordResetLink(email),
+                  'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني.'
+                )
+              }
+              onMagicLink={() =>
+                void handleAction(
+                  () => authActions.sendPasswordlessSignInLink(email),
+                  'تم إرسال رابط الدخول إلى بريدك الإلكتروني. افتحه على نفس الجهاز لإكمال الدخول.'
+                )
+              }
+            />
+            <GhostButton label="متابعة لاحقاً" onPress={() => setAuthModalVisible(false)} />
+          </View>
+        </Pressable>
+      </Modal>
     </Page>
   );
 }
@@ -409,5 +430,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 21,
     textAlign: 'right',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+  },
+  modalCard: {
+    borderRadius: 28,
+    backgroundColor: '#17110B',
+    padding: 18,
+    gap: 12,
   },
 });

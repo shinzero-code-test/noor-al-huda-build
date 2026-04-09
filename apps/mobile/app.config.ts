@@ -6,8 +6,8 @@ const config: ExpoConfig = {
   name: 'نور الهدى',
   owner: 'shinzero',
   slug: 'noor-al-huda',
-  version: '1.0.0',
-  runtimeVersion: '1.0.0',
+  version: '1.5.0',
+  runtimeVersion: '1.5.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
@@ -19,7 +19,7 @@ const config: ExpoConfig = {
   },
   ios: {
     bundleIdentifier: 'com.nooralhuda.app',
-    buildNumber: '1',
+    buildNumber: '5',
     supportsTablet: true,
     googleServicesFile: './GoogleService-Info.plist',
     usesAppleSignIn: true,
@@ -35,7 +35,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: 'com.nooralhuda.app',
-    versionCode: 1,
+    versionCode: 15,
     googleServicesFile: './google-services.json',
     adaptiveIcon: {
       backgroundColor: '#13100A',
