@@ -21,8 +21,11 @@ function parsePrayerClock(value?: string) {
   return date;
 }
 
-export function useSeasonalTheme(prayerTimes?: PrayerTimesData) {
+export function useSeasonalTheme(prayerTimes?: PrayerTimesData, forcedMode?: 'auto' | 'ramadan') {
   return useMemo(() => {
+    if (forcedMode === 'ramadan') {
+      return SEASONAL_THEMES.ramadan;
+    }
     const hijri = getHijriMonthDay();
     if (hijri.month === 9) return SEASONAL_THEMES.ramadan;
     if (hijri.month === 10 && hijri.day <= 3) return SEASONAL_THEMES.eid;
@@ -43,5 +46,5 @@ export function useSeasonalTheme(prayerTimes?: PrayerTimesData) {
     if (dhuhr && now >= dhuhr) return SEASONAL_THEMES.dhuhr;
     if (fajr && now >= fajr) return SEASONAL_THEMES.fajr;
     return SEASONAL_THEMES.default_dark;
-  }, [prayerTimes]);
+  }, [forcedMode, prayerTimes]);
 }

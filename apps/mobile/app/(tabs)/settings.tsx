@@ -19,6 +19,7 @@ export default function SettingsScreen() {
   const lastReadSurahId = useAppStore((state) => state.lastReadSurahId);
   const setCalculationMethod = useAppStore((state) => state.setCalculationMethod);
   const setReciter = useAppStore((state) => state.setReciter);
+  const setSeasonalMode = useAppStore((state) => state.setSeasonalMode);
   const setNotificationsEnabled = useAppStore((state) => state.setNotificationsEnabled);
   const { user } = useAuthUser();
 
@@ -47,6 +48,7 @@ export default function SettingsScreen() {
           />
           <GhostButton label="القارئ: مشاري العفاسي" onPress={() => setReciter('مشاري العفاسي')} />
           <GhostButton label="القارئ: السديس" onPress={() => setReciter('عبدالرحمن السديس')} />
+          <GhostButton label={settings.seasonalMode === 'ramadan' ? 'رمضان: مفعّل' : 'رمضان: تلقائي'} onPress={() => setSeasonalMode(settings.seasonalMode === 'ramadan' ? 'auto' : 'ramadan')} />
         </View>
       </SurfaceCard>
 

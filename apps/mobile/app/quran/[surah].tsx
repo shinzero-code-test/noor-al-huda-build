@@ -105,16 +105,19 @@ export default function SurahDetailScreen() {
               title={surahQuery.data.surah.name}
               subtitle={`${surahQuery.data.surah.transliteration} · ${surahQuery.data.surah.versesCount} آية`}
             />
+            <Text style={styles.sectionLabel}>الترجمات</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.selectorRow}>
               {(translationsQuery.data ?? []).slice(0, 6).map((item) => (
                 <GhostButton key={item.id} label={item.label} onPress={() => setSelectedTranslationId(item.id)} />
               ))}
             </ScrollView>
+            <Text style={styles.sectionLabel}>التفاسير</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.selectorRow}>
               {(tafsirQuery.data ?? []).slice(0, 6).map((item) => (
                 <GhostButton key={item.id} label={item.label} onPress={() => setSelectedTafsirId(item.id)} />
               ))}
             </ScrollView>
+            <Text style={styles.sectionLabel}>القراء</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.selectorRow}>
               {(recitersQuery.data ?? []).slice(0, 8).map((item) => (
                 <GhostButton key={item.id} label={item.name} onPress={() => setReciter(item.name)} />
@@ -179,6 +182,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     flexWrap: 'wrap',
+  },
+  sectionLabel: {
+    color: theme.colors.goldLight,
+    fontFamily: theme.fonts.bodyBold,
+    fontSize: 14,
+    textAlign: 'right',
   },
   selectorRow: {
     gap: 8,

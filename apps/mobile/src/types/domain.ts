@@ -131,4 +131,5 @@ export interface UserSettings {
   calculationMethod: string;
   reciter: string;
   notificationsEnabled: boolean;
+  seasonalMode?: 'auto' | 'ramadan';
 }

@@ -20,6 +20,7 @@ type AppState = {
   setLocation: (location: UserSettings['location']) => void;
   setCalculationMethod: (calculationMethod: string) => void;
   setReciter: (reciter: string) => void;
+  setSeasonalMode: (seasonalMode: 'auto' | 'ramadan') => void;
   setNotificationsEnabled: (notificationsEnabled: boolean) => void;
   setActiveRadioId: (activeRadioId: string | null) => void;
   setCurrentAudio: (currentAudioUrl: string | null, audioLabel?: string | null) => void;
@@ -54,6 +55,7 @@ export const useAppStore = create<AppState>()(
         calculationMethod: 'ummAlQura',
         reciter: 'Mishary Rashid Alafasy',
         notificationsEnabled: true,
+        seasonalMode: 'auto',
       },
       bookmarks: [],
       completedAzkar: {},
@@ -74,6 +76,10 @@ export const useAppStore = create<AppState>()(
       setReciter: (reciter) =>
         set((state) => ({
           settings: { ...state.settings, reciter },
+        })),
+      setSeasonalMode: (seasonalMode) =>
+        set((state) => ({
+          settings: { ...state.settings, seasonalMode },
         })),
       setNotificationsEnabled: (notificationsEnabled) =>
         set((state) => ({

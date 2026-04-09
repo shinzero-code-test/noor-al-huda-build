@@ -116,7 +116,7 @@ export default function PrayerScreen() {
       <SectionHeader title="الصلاة والقبلة" subtitle={settings.location.label} />
 
       <SurfaceCard accent="emerald">
-        <Text style={styles.highlightLabel}>الحساب الحالي</Text>
+        <Text style={styles.highlightLabel}>طريقة الحساب</Text>
         <Text style={styles.highlightValue}>{methods.find((item) => item.key === settings.calculationMethod)?.label}</Text>
         <View style={styles.methodRow}>
           {methods.map((method) => (
@@ -146,12 +146,12 @@ export default function PrayerScreen() {
           />
           <View style={styles.actionRow}>
             <PrimaryButton
-              label="تذكير الصلاة القادمة"
+              label="أذان الصلاة القادمة"
               tone="emerald"
               disabled={!prayerQuery.data.nextPrayer}
               onPress={() => void scheduleNextPrayerReminder()}
             />
-            <GhostButton label="جدولة اليوم كاملاً" onPress={() => void scheduleFullDay()} />
+            <GhostButton label="جدولة الأذان لليوم" onPress={() => void scheduleFullDay()} />
             <GhostButton label="إلغاء التذكيرات" onPress={() => void clearReminders()} />
           </View>
           {Object.entries(prayerQuery.data.prayers).map(([key, value]) => (

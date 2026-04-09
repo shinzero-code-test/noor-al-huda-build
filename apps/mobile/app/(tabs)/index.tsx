@@ -89,7 +89,7 @@ export default function HomeScreen() {
     : 'جارٍ حساب المواقيت';
 
   const recentBookmarks = bookmarks.slice(0, 2);
-  const seasonalTheme = useSeasonalTheme(prayerQuery.data);
+  const seasonalTheme = useSeasonalTheme(prayerQuery.data, settings.seasonalMode);
   const ramadanInfo = prayerQuery.data ? buildRamadanInfo(prayerQuery.data) : null;
 
   useEffect(() => {
